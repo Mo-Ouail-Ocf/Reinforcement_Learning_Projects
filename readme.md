@@ -1,41 +1,61 @@
-# AI Projects : RL & COMPUTER VISION
+# AI Projects: Reinforcement Learning & Computer Vision
 
-- I share in this repository my AI personal projects that I am working on
+Welcome to my repository of personal AI projects! Here, I share the work I'm doing in the fields of Reinforcement Learning (RL) and Computer Vision (CV).
 
-- This repository contains mainly :
+## Contents
 
-> Reinforcement learning projects:
->
-> - In such projects , I experience different algorithms in different environments
-> - Stating from cross entropy method to model-based algorithms
+### Reinforcement Learning Projects
 
-> Computer vision projects:
->
-> - I share different projects using different architectures :
-> - GANs , diffusion models , object detection , etc ...
+- These projects explore different algorithms across various environments.
+- I experiment with methods ranging from the cross-entropy method to model-based algorithms.
 
-> Taks to do:
->
-> - Add index to different projects & architectures
+### Computer Vision Projects
 
-# How to run the code :
+- I share diverse projects utilizing different architectures, including:
+  - GANs
+  - Diffusion models
+  - Object detection
+  - And more...
 
-## On local machine:
+### Tasks to Do
 
-- If you have cuda powered machine , and you want to run the projects locally , execute the following commands :
+- Add an index to organize different projects and architectures.
 
-## Windows :
+## How to Run the Code
+
+### On Local Machine
+
+If you have a CUDA-powered machine and want to run the projects locally, follow these steps:
+
+#### Windows
 
 ```batch
 conda env create -f environment.yml -n ai_projects_env
 conda activate ai_projects_env
 ```
 
-## Notice :
+### Notice
 
-- You must install conda
-- The projetcs are running in python 3.11
+- Make sure you have Conda installed.
+- The projects are compatible with Python 3.11.
 
-## Final word
+## References
 
-- I wish this repository can help you in your personal projects , feel free to contact me on my social accounts ,let us talk about AI !
+Here are some of the resources that have helped me on my journey:
+
+- **[Deep Reinforcement Learning Hands-On](https://www.packtpub.com/en-in/product/deep-reinforcement-learning-hands-on-9781838826994)**
+
+  - Description: This book offers great hands-on RL projects with a good mix of mathematical theory and applied RL. Highly recommended.
+
+- **[Machine Learning with PyTorch and Scikit-Learn: Develop Machine Learning and Deep Learning Models with Python](https://www.packtpub.com/en-in/product/machine-learning-with-pytorch-and-scikit-learn-9781801819312)**
+
+  - Description: This book is a comprehensive guide to machine learning and deep learning with PyTorch, acting as both a step-by-step tutorial and a valuable reference.
+
+- **[Modern Computer Vision with PyTorch](https://www.packtpub.com/en-in/product/modern-computer-vision-with-pytorch-9781803231334)**
+  - Description: This book guides you through the fundamentals of neural networks (NNs) and PyTorch, and shows how to implement state-of-the-art architectures for real-world tasks.
+
+## Final Word
+
+I hope this repository helps you with your personal projects. Feel free to contact me on my social accounts to discuss AI and share ideas!
+
+---
