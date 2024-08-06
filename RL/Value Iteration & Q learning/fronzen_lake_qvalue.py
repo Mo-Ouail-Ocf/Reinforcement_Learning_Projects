@@ -80,8 +80,16 @@ class Agent:
                     q_value+=proba*value
                 self.values_matrix[(state,action)]=q_value
 
-                
+
 if __name__=="__main__":
+    # Algo
+    '''
+    For each step:
+        1- Interact once with environement by playing n-episdoes : update the tables
+        2- update the values matrix with the values iteration algo
+        3- Test the updated values matrix
+        4- If we reached a threshold : stop
+    '''
     env = gym.make(ENV_NAME)
     agent = Agent()
     writer = SummaryWriter(log_dir="logs")

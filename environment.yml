@@ -26,3 +26,5 @@ dependencies:
       - pytorch-ignite==0.4.13
       - ptan==0.8
       - opencv-python==4.9.0.80
+      - gymnasium[accept-rom-license]
+      - autorom[accept-rom-license]

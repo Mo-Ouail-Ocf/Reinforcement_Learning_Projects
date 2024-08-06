@@ -1,6 +1,6 @@
-# AI Projects: Reinforcement Learning & Computer Vision
+# AI Projects: Reinforcement Learning
 
-Welcome to my repository of personal AI projects! Here, I share the work I'm doing in the fields of Reinforcement Learning (RL) and Computer Vision (CV).
+Welcome to my repository of personal AI projects! Here, I share the work I'm doing in the field of Reinforcement Learning (RL).
 
 ## Contents
 
@@ -8,18 +8,15 @@ Welcome to my repository of personal AI projects! Here, I share the work I'm doi
 
 - These projects explore different algorithms across various environments.
 - I experiment with methods ranging from the cross-entropy method to model-based algorithms.
-
-### Computer Vision Projects
-
-- I share diverse projects utilizing different architectures, including:
-  - GANs
-  - Diffusion models
-  - Object detection
-  - And more...
+- The projects include implementations of:
+  - Deep Q-Networks (DQN)
+  - Actor-Critic Methods
+  - State-of-the-Art Algorithms
+  - And many more
 
 ### Tasks to Do
 
-- Add an index to organize different projects and architectures.
+- Add an index to organize different projects and algorithms.
 
 ## How to Run the Code
 
@@ -51,11 +48,6 @@ Here are some of the resources that have helped me on my journey:
 
   - Description: This book is a comprehensive guide to machine learning and deep learning with PyTorch, acting as both a step-by-step tutorial and a valuable reference.
 
-- **[Modern Computer Vision with PyTorch](https://www.packtpub.com/en-in/product/modern-computer-vision-with-pytorch-9781803231334)**
-  - Description: This book guides you through the fundamentals of neural networks (NNs) and PyTorch, and shows how to implement state-of-the-art architectures for real-world tasks.
-
 ## Final Word
 
 I hope this repository helps you with your personal projects. Feel free to contact me on my social accounts to discuss AI and share ideas!
-
----
