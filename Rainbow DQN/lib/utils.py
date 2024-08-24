@@ -6,9 +6,13 @@ import torch.nn as nn
 
 import ptan.ignite as ptan_ignite
 from ptan.experience import ExperienceFirstLast, \
-    ExperienceSourceFirstLast, PrioritizedReplayBuffer
+    ExperienceSourceFirstLast, PrioritizedReplayBuffer 
 
-from ignite.contrib.handlers import tensorboard_logger as tb_logger
+from ignite.engine import Engine ,Events
+from ignite.contrib.handlers.tensorboard_logger import TensorboardLogger , OutputHandler
+from ignite.metrics import RunningAverage
+
+from datetime import timedelta, datetime
 
 
 class HyperParameters(dataclass):
@@ -39,11 +43,24 @@ GAME_PARAMS = {
 
 # gen batch 
 
-def gen_batch(buffer:PrioritizedReplayBuffer,params:HyperParameters):
+
+class AnnealingBetaSchedule:
+    def __init__(self,beta_start:float,beta_frames:float):
+        self.beta_start  = beta_start
+        self.beta = beta_start
+        self.beta_frames = beta_frames
+    def update_beta(self,iteration):
+        new_val = self.beta_start + iteration *(1.0 -self.beta_start )/ self.beta_frames 
+        self.beta = min(1.0,new_val)
+        return self.beta
+
+
+
+def gen_batch(buffer:PrioritizedReplayBuffer,params:HyperParameters,beta_sch:AnnealingBetaSchedule):
     buffer.populate(params.replay_initial)
     while True:
         buffer.populate(1)
-        yield buffer.sample(params.batch_size)
+        yield buffer.sample(params.batch_size,beta=beta_sch.beta)
 
 
 # functions : unpack_batch , calc_loss , attach_ignite
@@ -103,4 +120,93 @@ def calc_loss(tgt_net:nn.Module,net:nn.Module,
     return loss ,(losses + 1e-5).data.cpu().numpy() # + small number to avoid priors=0
 
 
+
+def attach_ignite(exp_source:ExperienceSourceFirstLast,trainer:Engine,parmas:HyperParameters,
+                  beta_scheduler:AnnealingBetaSchedule):
     
+    # attach handlers
+    end_ep_hanlder = ptan_ignite.EndOfEpisodeHandler(
+        exp_source=exp_source,
+        bound_avg_reward=parmas.stop_reward,    
+    )   
+    end_ep_hanlder.attach(trainer)
+
+    fps_handler = ptan_ignite.EpisodeFPSHandler()
+    fps_handler.attach(trainer)
+
+    periodic_events_handler = ptan_ignite.PeriodicEvents()
+    periodic_events_handler.attach(trainer)
+
+    # Logging :
+
+    @trainer.on(ptan_ignite.EpisodeEvents.EPISODE_COMPLETED)
+    def handle_end_of_episode(engine):
+        metrics = trainer.state.metrics # reward , steps ,avg_reward , avg_steps
+        passed = metrics.get('time_passed', 0)
+        print(f'~~~~ Episode {engine.state.episode} ~~~~~~~')
+        print(f'->Number of steps : {metrics['steps']}')
+        print(f'->Reward : {metrics['reward']}')
+        print(f'->Average reward : {metrics['avg_reward']}')
+        print(f'->Passed : {timedelta(seconds=int(passed))}')
+
+    @trainer.on(ptan_ignite.EpisodeEvents.BEST_REWARD_REACHED)
+    def handle_bound_reached(engine):
+        metrics = trainer.state.metrics
+        print('~~~~ Best reward reached ~~~~~~~')
+        print(f'-> Average ReEward : {metrics['avg_reward']}')
+
+
+    @trainer.on(ptan_ignite.EpisodeEvents.BOUND_REWARD_REACHED)
+    def end_train(engine):
+        metrics = trainer.state.metrics
+        passed = metrics.get('time_passed', 0)
+        print('~~~~ Solved the game ! ~~~~~~~')
+        print(f'->Number of steps : {metrics['steps']}')
+        print(f'-> Time passed : {passed}')
+        print(f'-> Total iterations : {trainer.state.iteration}')
+        trainer.should_terminate=True
+        trainer.state.solved = True
+
+    # scheduling
+
+    @trainer.on(Events.ITERATION_COMPLETED)
+    def schedule_beta(engine):
+        beta_scheduler.update_beta(trainer.state.iteration)
+
+    # metric,
+    loss_avg_metric = RunningAverage(output_transform=lambda a:a['loss'])
+    loss_avg_metric.attach(trainer,name="avg_loss")
+
+    # TB Logging
+
+    tb_logger = TensorboardLogger(log_dir="space-invaders")
+    
+    end_ep_logger = OutputHandler(
+        metric_names=['reward','steps','avg_reward'],
+        tag="episodes",
+    )
+    event_name=ptan_ignite.EpisodeEvents.EPISODE_COMPLETED
+    tb_logger.attach(
+        trainer,
+        end_ep_logger,
+        event_name,
+    )
+
+    metrics = ['avg_loss', 'avg_fps','snr_1','snr_2']
+    engine_output_logger = OutputHandler(
+        output_transform= lambda a : a ,
+        metric_names=metrics,
+        tag="train"
+    )
+    
+    event_name = ptan_ignite.PeriodEvents.ITERS_100_COMPLETED
+    tb_logger.attach(
+        trainer,
+        engine_output_logger,
+        event_name,
+    )
+
+
+
+
+
