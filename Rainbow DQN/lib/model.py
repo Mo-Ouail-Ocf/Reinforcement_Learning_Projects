@@ -2,7 +2,6 @@ import torch.nn as nn
 from torchrl.modules import NoisyLinear
 import torch
 import typing as tt
-from torchsummary import summary
 # The model combines :
 
 # 1- N-Step deep q learning : make sure to pass gamma**n to the loss
@@ -70,6 +69,3 @@ class RainbowDQN(nn.Module):
         ]  
         
 
-if __name__=="__main__":
-    model = RainbowDQN((4,64,64),4).to('cuda')
-    print(summary(model,(4,64,64))) 

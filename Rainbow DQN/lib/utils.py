@@ -14,8 +14,8 @@ from ignite.metrics import RunningAverage
 
 from datetime import timedelta, datetime
 
-
-class HyperParameters(dataclass):
+@dataclass
+class HyperParameters:
     env_name: str
     run_name: str
 
@@ -33,10 +33,9 @@ GAME_PARAMS = {
         env_name="SpaceInvadersNoFrameskip-v4",
         stop_reward=500.0,
         run_name='invaders',
-        replay_size=10_000_000,
-        replay_initial=50_000,
+        buff_size=10_000_000,
+        buff_initial_size=50_000,
         target_net_sync=10_000,
-        epsilon_frames=10_000_000,
         learning_rate=0.00025,
     ),
 }
@@ -57,7 +56,7 @@ class AnnealingBetaSchedule:
 
 
 def gen_batch(buffer:PrioritizedReplayBuffer,params:HyperParameters,beta_sch:AnnealingBetaSchedule):
-    buffer.populate(params.replay_initial)
+    buffer.populate(params.buff_initial_size)
     while True:
         buffer.populate(1)
         yield buffer.sample(params.batch_size,beta=beta_sch.beta)
@@ -100,9 +99,9 @@ def calc_loss(tgt_net:nn.Module,net:nn.Module,
     dones_t= torch.BoolTensor(dones).to(device)
     last_states_t= torch.as_tensor(last_states).to(device)
 
-    batch_weights_t = torch.tensor(batch_weights)
+    batch_weights_t = torch.tensor(batch_weights).to(device)
 
-    all_q_vals:torch.Tensor = net(states_t)
+    all_q_vals = net(states_t)
     predicted_q_vals = all_q_vals.gather(
         dim=1,index=actions_t.unsqueeze(-1)
     ).squeeze(-1)
@@ -144,16 +143,16 @@ def attach_ignite(exp_source:ExperienceSourceFirstLast,trainer:Engine,parmas:Hyp
         metrics = trainer.state.metrics # reward , steps ,avg_reward , avg_steps
         passed = metrics.get('time_passed', 0)
         print(f'~~~~ Episode {engine.state.episode} ~~~~~~~')
-        print(f'->Number of steps : {metrics['steps']}')
-        print(f'->Reward : {metrics['reward']}')
-        print(f'->Average reward : {metrics['avg_reward']}')
-        print(f'->Passed : {timedelta(seconds=int(passed))}')
+        print(f"->Number of steps : {metrics['steps']}")
+        print(f"->Reward : {metrics['reward']}")
+        print(f"->Average reward : {metrics['avg_reward']}")
+        print(f"->Passed : {timedelta(seconds=int(passed))}")
 
     @trainer.on(ptan_ignite.EpisodeEvents.BEST_REWARD_REACHED)
     def handle_bound_reached(engine):
         metrics = trainer.state.metrics
         print('~~~~ Best reward reached ~~~~~~~')
-        print(f'-> Average ReEward : {metrics['avg_reward']}')
+        print(f"-> Average ReEward : {metrics['avg_reward']}")
 
 
     @trainer.on(ptan_ignite.EpisodeEvents.BOUND_REWARD_REACHED)
@@ -161,8 +160,8 @@ def attach_ignite(exp_source:ExperienceSourceFirstLast,trainer:Engine,parmas:Hyp
         metrics = trainer.state.metrics
         passed = metrics.get('time_passed', 0)
         print('~~~~ Solved the game ! ~~~~~~~')
-        print(f'->Number of steps : {metrics['steps']}')
-        print(f'-> Time passed : {passed}')
+        print(f"->Number of steps : {metrics['steps']}")
+        print(f"-> Time passed : {passed}")
         print(f'-> Total iterations : {trainer.state.iteration}')
         trainer.should_terminate=True
         trainer.state.solved = True

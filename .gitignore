@@ -2,3 +2,6 @@ runs/
 logs/
 tests/
 test.py
+space-invaders/
+models/
+__pycache/
