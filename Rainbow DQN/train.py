@@ -18,7 +18,7 @@ ALPHA = 0.6
 N_STEPS = 2
 # replay buffer params
 BETA_START = 0.4
-BETA_FRAMES = 500_000
+BETA_FRAMES = 1_000_000
 
 PERIODIC_LOGGING =100
 
@@ -31,7 +31,6 @@ def train(params:HyperParameters,device='cuda'):
     action_selector = ArgmaxActionSelector()
     model = RainbowDQN(env.observation_space.shape,env.action_space.n).to(device)
     target_net = TargetNet(model)
-    target_net.target_model = target_net.target_model.to('cuda') 
     agent = DQNAgent(model,action_selector,device='cuda')
 
     exp_source = ExperienceSourceFirstLast(env,agent,gamma=params.gamma,
@@ -39,7 +38,7 @@ def train(params:HyperParameters,device='cuda'):
     
     priority_buff = PrioritizedReplayBuffer(
         alpha=ALPHA,
-        buffer_size=params.batch_size,
+        buffer_size=params.buff_size,
         experience_source=exp_source,
     )
 
@@ -51,7 +50,6 @@ def train(params:HyperParameters,device='cuda'):
         transitions, idxes, weights = batch
         optimizer.zero_grad()
 
-        model.reset_noise()
         loss , new_priors = calc_loss(target_net.target_model,model,transitions,weights,
                                       params.gamma**N_STEPS)
         
@@ -59,12 +57,12 @@ def train(params:HyperParameters,device='cuda'):
 
         optimizer.step()
 
+        model.reset_noise()
+
         priority_buff.update_priorities(idxes,new_priors)
 
         if engine.state.iteration % params.target_net_sync ==0 :
             target_net.sync()
-            target_net.target_model = target_net.target_model.to('cuda') 
-
 
         if engine.state.iteration % PERIODIC_LOGGING == 0:
             snrs = model.noisy_layers_snr()
@@ -82,7 +80,7 @@ def train(params:HyperParameters,device='cuda'):
 
     checkpoint_handler = Checkpoint(
         to_save={'model': model, 'optimizer': optimizer},  # Save both model and optimizer
-        save_handler=DiskSaver('models', create_dir=True),  # Directory to save the models
+        save_handler=DiskSaver('models_invaders', create_dir=True),  # Directory to save the models
         n_saved=3,  # Number of checkpoints to keep
         filename_prefix='model',  # Prefix for the checkpoint filenames
         global_step_transform=lambda engine, event: engine.state.iteration  # Naming based on iterations
@@ -99,14 +97,3 @@ def train(params:HyperParameters,device='cuda'):
 
 if __name__=="__main__":
     train(GAME_PARAMS['invaders'])
-
-    
-
-
-
-        
-
-
-    
-
-    

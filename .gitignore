@@ -4,4 +4,8 @@ tests/
 test.py
 space-invaders/
 models/
-__pycache/
+__pycache__/
+vpg_cartpole/
+models_invaders/
+invaders/
+pong/

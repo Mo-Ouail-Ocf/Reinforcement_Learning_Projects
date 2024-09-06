@@ -25,10 +25,19 @@ class HyperParameters:
 
     stop_reward: float
     learning_rate: float = 0.0001
-    batch_size: int = 32
+    batch_size: int = 64
     gamma: float = 0.99
 
 GAME_PARAMS = {
+    'pong': HyperParameters(
+        env_name="PongNoFrameskip-v4",
+        stop_reward=18.0,
+        run_name='pong',
+        buff_size=100_000,
+        buff_initial_size=10_000,
+        target_net_sync=1000,
+        learning_rate=8.085421018377671e-05,
+    ),
     'invaders': HyperParameters(
         env_name="SpaceInvadersNoFrameskip-v4",
         stop_reward=500.0,
@@ -36,10 +45,24 @@ GAME_PARAMS = {
         buff_size=10_000_000,
         buff_initial_size=50_000,
         target_net_sync=10_000,
-        learning_rate=0.00025,
+        learning_rate=1e-5,
     ),
 }
-
+'''
+BEST_PONG = common.Hyperparams(
+    env_name="PongNoFrameskip-v4",
+    stop_reward=18.0,
+    run_name="pong",
+    replay_size=100_000,
+    replay_initial=10_000,
+    target_net_sync=1000,
+    epsilon_frames=100_000,
+    epsilon_final=0.02,
+    learning_rate=8.085421018377671e-05,
+    gamma=0.98,
+    episodes_to_solve=215,
+)
+'''
 # gen batch 
 
 
@@ -178,7 +201,7 @@ def attach_ignite(exp_source:ExperienceSourceFirstLast,trainer:Engine,parmas:Hyp
 
     # TB Logging
 
-    tb_logger = TensorboardLogger(log_dir="space-invaders")
+    tb_logger = TensorboardLogger(log_dir=GAME_PARAMS['invaders'].run_name)
     
     end_ep_logger = OutputHandler(
         metric_names=['reward','steps','avg_reward'],
@@ -204,8 +227,3 @@ def attach_ignite(exp_source:ExperienceSourceFirstLast,trainer:Engine,parmas:Hyp
         engine_output_logger,
         event_name,
     )
-
-
-
-
-
