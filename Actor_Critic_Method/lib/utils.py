@@ -1,6 +1,7 @@
+import torch.nn as nn
 import torch
 import numpy as np
-from config import Hyperparams
+from .config import Hyperparams
 from ptan.experience import ExperienceFirstLast  
 import time
 import sys
@@ -74,9 +75,9 @@ class EpisodeTracker:
         sys.stdout.flush()
 
 
-        self.writer.write('speed',speed,frame)
-        self.writer.write('reward',reward,frame)
-        self.writer.write('reward_mean',reward_mean,frame)
+        self.writer.add_scalar('speed',speed,frame)
+        self.writer.add_scalar('reward',reward,frame)
+        self.writer.add_scalar('reward_mean',reward_mean,frame)
 
         self.ep_start_time = time.time()
 
